@@ -1,5 +1,6 @@
 package net.netdedicated.license;
 
+import net.netdedicated.beans.ErrorBean;
 import net.netdedicated.domain.License;
 
 import java.beans.XMLDecoder;
@@ -26,7 +27,7 @@ public class LicenseApi {
 		this.credentials = credentials;
 		this.licenseServerUrl = licenseServerUrl;
 	}
-	public License create(String type, String ip) throws IOException {
+	public License create(String type, String ip) throws IOException, LicenseApiException {
 		License license = new License();
 		license.setType(type);
 		license.setIp(InetAddress.getByName(ip).getAddress());
@@ -42,24 +43,32 @@ public class LicenseApi {
 		writer.write(data);
 		writer.flush();
 
-        License createdLicense;
+        License createdLicense = null;
         XMLDecoder decoder;
         if (debug){
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String line;
-            StringBuffer licenseBuffer = new StringBuffer();
             while ((line = reader.readLine()) != null){
                 baos.write(line.getBytes());
             }
             writer.close();
             reader.close();
-
+            System.out.println(baos.toString());
             decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
         } else {
             decoder = new XMLDecoder(urlConnection.getInputStream());
         }
-		createdLicense = (License) decoder.readObject();
+        Object receivedObject = decoder.readObject();
+        if (receivedObject instanceof License){
+            createdLicense = (License) receivedObject;
+        } else if (receivedObject instanceof ErrorBean){
+            ErrorBean errorBean = (ErrorBean) receivedObject;
+            throw new LicenseApiException("API Error: " + errorBean.getErrorMessage());
+        } else {
+            throw new LicenseApiException("API Error: received object has unknown class " + receivedObject.getClass());
+        }
+
 		return createdLicense;
 	}
 	public void delete(String ip) throws IOException{
@@ -87,7 +96,7 @@ public class LicenseApi {
 		reader.close();
 
 	}
-	public void update(String oldIp, String newIp, String newType) throws IOException{
+	public void update(String oldIp, String newIp, String newType) throws IOException, LicenseApiException{
 		delete(oldIp);
 		create(newType, newIp);
 	}
