@@ -3,10 +3,7 @@ package net.netdedicated.license;
 import net.netdedicated.domain.License;
 
 import java.beans.XMLDecoder;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.*;
 
 /**
@@ -19,7 +16,12 @@ import java.net.*;
 public class LicenseApi {
 	private BasicCredentials credentials;
 	private String licenseServerUrl;
-
+    private Boolean debug = false;
+    public LicenseApi(BasicCredentials credentials, String licenseServerUrl, Boolean debug){
+        this.credentials = credentials;
+		this.licenseServerUrl = licenseServerUrl;
+        this.debug = debug;
+    }
 	public LicenseApi(BasicCredentials credentials, String licenseServerUrl) {
 		this.credentials = credentials;
 		this.licenseServerUrl = licenseServerUrl;
@@ -40,17 +42,24 @@ public class LicenseApi {
 		writer.write(data);
 		writer.flush();
 
+        License createdLicense;
+        XMLDecoder decoder;
+        if (debug){
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            String line;
+            StringBuffer licenseBuffer = new StringBuffer();
+            while ((line = reader.readLine()) != null){
+                baos.write(line.getBytes());
+            }
+            writer.close();
+            reader.close();
 
-		/*BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-		String line;
-		StringBuffer licenseBuffer = new StringBuffer();
-		while ((line = reader.readLine()) != null){
-			licenseBuffer.append(line);
-		}
-		writer.close();
-		reader.close();*/
-		XMLDecoder decoder = new XMLDecoder(urlConnection.getInputStream());
-		License createdLicense = (License) decoder.readObject();
+            decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
+        } else {
+            decoder = new XMLDecoder(urlConnection.getInputStream());
+        }
+		createdLicense = (License) decoder.readObject();
 		return createdLicense;
 	}
 	public void delete(String ip) throws IOException{
