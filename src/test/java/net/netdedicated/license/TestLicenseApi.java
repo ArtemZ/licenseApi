@@ -14,16 +14,16 @@ import static org.junit.Assert.*;
  * To change this template use File | Settings | File Templates.
  */
 public class TestLicenseApi {
-	LicenseApi api = new LicenseApi(new BasicCredentials("admin", "admin"), "http://localhost:8089");
-	/*@Test
+	LicenseApi api = new LicenseApi(new BasicCredentials("admin", "admin"), "http://license.multicabinet.com");
+/*	@Test
 	public void testCreate(){
 		try {
 			api.create("Test", "127.0.0.5");
-		} catch (IOException e){
+		} catch (Exception e){
 			fail(e.getMessage());
 		}
-	}*/
-	/*@Test
+	}
+	@Test
 	public void testGetLicenseByIp(){
 		try {
 			api.getLicenseByIp("127.0.0.5");
@@ -31,8 +31,8 @@ public class TestLicenseApi {
 			e.printStackTrace();
 			fail();
 		}
-	}*/
-	/*@Test
+	}
+	@Test
 	public void testDelete(){
 		try{
 			api.delete("127.0.0.5");

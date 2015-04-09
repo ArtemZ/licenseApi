@@ -1,7 +1,7 @@
 package net.netdedicated.license;
 
 
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
 
 import java.io.IOException;
 
@@ -21,8 +21,7 @@ public class BasicCredentials {
 	}
 
 	String toBase64() throws IOException {
-		BASE64Encoder encoder = new BASE64Encoder();
-		return encoder.encodeBuffer((username + ":" + password).getBytes()).trim();
+        return  Base64.encodeBase64String((username + ":" + password).getBytes()).trim();
 	}
 
 }
