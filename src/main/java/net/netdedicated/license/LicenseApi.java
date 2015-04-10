@@ -6,6 +6,7 @@ import net.netdedicated.domain.License;
 import java.beans.XMLDecoder;
 import java.io.*;
 import java.net.*;
+import java.util.Properties;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,7 +55,7 @@ public class LicenseApi {
             }
             writer.close();
             reader.close();
-            System.out.println(baos.toString());
+            System.out.println("Actual data: '" + baos.toString() + "' ");
             decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
         } else {
             decoder = new XMLDecoder(urlConnection.getInputStream());
@@ -71,7 +72,7 @@ public class LicenseApi {
 
 		return createdLicense;
 	}
-	public void delete(String ip) throws IOException{
+	public void delete(String ip) throws IOException, LicenseApiException{
 		License licenseToDelete = getLicenseByIp(ip);
 		URL url = new URL(licenseServerUrl + "/license/apidelete");
 		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
@@ -100,28 +101,35 @@ public class LicenseApi {
 		delete(oldIp);
 		create(newType, newIp);
 	}
-	public License getLicenseByIp(String ip) throws IOException{
+	public License getLicenseByIp(String ip) throws IOException, LicenseApiException{
 		URL url = new URL(licenseServerUrl + "/license/apilicense?ipaddr=" + URLEncoder.encode(ip, "UTF-8") );
 		HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
 		urlConnection.setRequestMethod("GET");
 		urlConnection.setDoOutput(false);
 		urlConnection.setRequestProperty("Authorization", "Basic " + credentials.toBase64());
 
-		/*OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
-		writer.write(data);
-		writer.flush();*/
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null){
+            baos.write(line.getBytes());
+        }
+        reader.close();
 
+        if (debug){
 
-		/*BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-		String line;
-		StringBuffer licenseBuffer = new StringBuffer();
-		while ((line = reader.readLine()) != null){
-			licenseBuffer.append(line);
-		}
-*//*		System.out.println("output: '" + licenseBuffer.toString() + "'");*//*
-		reader.close();*/
-		XMLDecoder decoder = new XMLDecoder(urlConnection.getInputStream());
-		License createdLicense = (License) decoder.readObject();
-		return createdLicense;
+            System.out.println("Actual data: '" + baos.toString() + "' ");
+        }
+        if (baos.toString().contains("ERROR=")){
+            /*Properties properties = new Properties();
+            properties.load(new ByteArrayInputStream(baos.toByteArray()));*/
+
+            throw new LicenseApiException("Unable to get license from the server, server returns error: " + baos.toString());
+        } else {
+            XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
+            License createdLicense = (License) decoder.readObject();
+            return createdLicense;
+        }
+
 	}
 }

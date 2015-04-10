@@ -14,8 +14,8 @@ import static org.junit.Assert.*;
  * To change this template use File | Settings | File Templates.
  */
 public class TestLicenseApi {
-	LicenseApi api = new LicenseApi(new BasicCredentials("admin", "admin"), "http://license.multicabinet.com");
-/*	@Test
+	LicenseApi api = new LicenseApi(new BasicCredentials("admin", "admin"), "http://license.multicabinet.com", true);
+	@Test
 	public void testCreate(){
 		try {
 			api.create("Test", "127.0.0.5");
@@ -27,7 +27,7 @@ public class TestLicenseApi {
 	public void testGetLicenseByIp(){
 		try {
 			api.getLicenseByIp("127.0.0.5");
-		} catch (IOException e){
+		} catch (Exception e){
 			e.printStackTrace();
 			fail();
 		}
@@ -36,9 +36,9 @@ public class TestLicenseApi {
 	public void testDelete(){
 		try{
 			api.delete("127.0.0.5");
-		}catch (IOException e){
+		}catch (Exception e){
 			e.printStackTrace();
 			fail();
 		}
-	}*/
+	}
 }
