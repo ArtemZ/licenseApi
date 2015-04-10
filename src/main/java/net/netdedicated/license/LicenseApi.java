@@ -56,9 +56,9 @@ public class LicenseApi {
             writer.close();
             reader.close();
             System.out.println("Actual data: '" + baos.toString() + "' ");
-            decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
+            decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()), null, null, License.class.getClassLoader());
         } else {
-            decoder = new XMLDecoder(urlConnection.getInputStream());
+            decoder = new XMLDecoder(urlConnection.getInputStream(), null, null, License.class.getClassLoader());
         }
         Object receivedObject = decoder.readObject();
         if (receivedObject instanceof License){
@@ -126,7 +126,7 @@ public class LicenseApi {
 
             throw new LicenseApiException("Unable to get license from the server, server returns error: " + baos.toString());
         } else {
-            XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()));
+            XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baos.toByteArray()), null, null, License.class.getClassLoader());
             License createdLicense = (License) decoder.readObject();
             return createdLicense;
         }
